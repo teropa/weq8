@@ -1,0 +1,26 @@
+html,
+body {
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #fff;
+  background-color: #111;
+}
+
+main {
+  max-width: 1024px;
+  margin: 100px auto;
+  text-align: center;
+}
+
+.demo {
+  margin: 80px 0;
+}
+weq8-ui {
+  margin: 40px 0;
+}
+
+a,
+a:visited {
+  color: #fff;
+}

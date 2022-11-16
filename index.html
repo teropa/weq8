@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WEQ8</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>WEQ8: A Parametric Equaliser for Web Audio</h1>
+      <p>
+        Find it on <a href="https://www.npmjs.com/package/weq8">NPM</a> and
+        <a href="https://github.com/teropa/weq8">Github</a>.
+      </p>
+      <p class="demo">
+        <button id="playstop" disabled>Play</button>
+        <weq8-ui></weq8-ui>
+        <a
+          href="https://splice.com/sounds/samples/77350cc6898354b56dac34d64212646eb9bd500f7ec17e59f0ed5994c5280d19/-"
+          >Loop by Zenhiser</a
+        >
+      </p>
+    </main>
+    <script type="module">
+      import { WEQ8Runtime } from "https://cdn.skypack.dev/weq8";
+      import "https://cdn.skypack.dev/weq8/ui";
+
+      let audioCtx = new AudioContext();
+      let weq8 = new WEQ8Runtime(audioCtx);
+      weq8.connect(audioCtx.destination);
+      document.querySelector("weq8-ui").runtime = weq8;
+
+      fetch("./loop.m4a")
+        .then((res) => res.arrayBuffer())
+        .then((buf) => audioCtx.decodeAudioData(buf))
+        .then((buf) => {
+          let playBtn = document.querySelector("#playstop");
+          playBtn.disabled = false;
+          let currentSrc;
+          playBtn.addEventListener("click", () => {
+            if (!currentSrc) {
+              currentSrc = audioCtx.createBufferSource();
+              currentSrc.buffer = buf;
+              currentSrc.loop = true;
+              currentSrc.connect(weq8.input);
+              currentSrc.start();
+              playBtn.textContent = "Stop";
+            } else {
+              currentSrc.disconnect();
+              currentSrc.stop();
+              currentSrc = null;
+              playBtn.textContent = "Play";
+            }
+          });
+        });
+    </script>
+  </body>
+</html>
