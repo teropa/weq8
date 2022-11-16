@@ -1,0 +1,38 @@
+{
+  "name": "weq8",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "ISC",
+  "exports": {
+    ".": {
+      "import": "./dist/runtime.js",
+      "require": "./dist/runtime.cjs"
+    },
+    "./ui": {
+      "import": "./dist/ui.js",
+      "require": "./dist/ui.cjs"
+    }
+  },
+  "main": "./dist/runtime.cjs",
+  "module": "./dist/runtime.js",
+  "typings": "./dist/main.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:watch": "tsc && vite build --watch"
+  },
+  "dependencies": {
+    "lit": "^2.4.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^9.0.2",
+    "@types/node": "^18.11.9",
+    "rollup-plugin-typescript-paths": "^1.4.0",
+    "tslib": "^2.4.1",
+    "typescript": "^4.6.4",
+    "vite": "^3.2.3"
+  }
+}
