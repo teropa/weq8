@@ -129,6 +129,16 @@ export class WEQ8UIElement extends LitElement {
           }
         }
         this.gridXs = newGridXs;
+
+        this.runtime.on("filtersChanged", () => {
+          this.frequencyResponse?.render();
+          this.requestUpdate();
+          for (let row of Array.from(
+            this.shadowRoot?.querySelectorAll("weq8-ui-filter-row") ?? []
+          )) {
+            (row as ReactiveElement).requestUpdate();
+          }
+        });
       }
     }
   }
@@ -148,14 +158,7 @@ export class WEQ8UIElement extends LitElement {
         <tbody>
           ${Array.from({ length: 8 }).map(
             (_, i) =>
-              html`<weq8-ui-filter-row
-                .runtime=${this.runtime}
-                .index=${i}
-                @change=${() => {
-                  this.frequencyResponse?.render();
-                  this.specUpdate();
-                }}
-              />`
+              html`<weq8-ui-filter-row .runtime=${this.runtime} .index=${i} />`
           )}
         </tbody>
       </table>
@@ -263,21 +266,6 @@ export class WEQ8UIElement extends LitElement {
         let pointerGain = clamp(relY * 30 - 15, -15, 15);
         this.runtime.setFilterGain(idx, pointerGain);
       }
-
-      this.specUpdate();
-      this.frequencyResponse?.render();
     }
-  }
-
-  private specUpdate() {
-    this.requestUpdate();
-    for (let row of Array.from(
-      this.shadowRoot?.querySelectorAll("weq8-ui-filter-row") ?? []
-    )) {
-      (row as ReactiveElement).requestUpdate();
-    }
-    this.dispatchEvent(
-      new CustomEvent("filterschanged", { bubbles: true, composed: true })
-    );
   }
 }

@@ -1,11 +1,17 @@
+import { createNanoEvents, Emitter, Unsubscribe } from "nanoevents";
 import { WEQ8Spec, FilterType, DEFAULT_SPEC } from "./spec";
 import { getBiquadFilterOrder, getBiquadFilterType } from "./functions";
 
+interface WEQ8Events {
+  filtersChanged: (spec: WEQ8Spec) => void;
+}
 export class WEQ8Runtime {
   public readonly input: AudioNode;
   private readonly output: AudioNode;
 
   private filterbank: { idx: number; filters: BiquadFilterNode[] }[] = [];
+
+  private readonly emitter: Emitter<WEQ8Events>;
 
   constructor(
     public readonly audioCtx: BaseAudioContext,
@@ -14,6 +20,7 @@ export class WEQ8Runtime {
     this.input = audioCtx.createGain();
     this.output = audioCtx.createGain();
     this.buildFilterChain(spec);
+    this.emitter = createNanoEvents();
   }
 
   connect(node: AudioNode): void {
@@ -22,6 +29,13 @@ export class WEQ8Runtime {
 
   disconnect(node: AudioNode): void {
     this.output.disconnect(node);
+  }
+
+  on<E extends keyof WEQ8Events>(
+    event: E,
+    callback: WEQ8Events[E]
+  ): Unsubscribe {
+    return this.emitter.on(event, callback);
   }
 
   setFilterType(idx: number, type: FilterType | "noop"): void {
@@ -72,6 +86,7 @@ export class WEQ8Runtime {
         filters.push(newFilter);
       }
     }
+    this.emitter.emit("filtersChanged", this.spec);
   }
 
   toggleBypass(idx: number, bypass: boolean): void {
@@ -85,6 +100,7 @@ export class WEQ8Runtime {
       this.connectFilter(idx, this.spec[idx].type as FilterType);
     }
     this.spec[idx].bypass = bypass;
+    this.emitter.emit("filtersChanged", this.spec);
   }
 
   private disconnectFilter(idx: number) {
@@ -130,6 +146,7 @@ export class WEQ8Runtime {
         filter.frequency.value = frequency;
       }
     }
+    this.emitter.emit("filtersChanged", this.spec);
   }
 
   setFilterQ(idx: number, Q: number): void {
@@ -140,6 +157,7 @@ export class WEQ8Runtime {
         filter.Q.value = Q;
       }
     }
+    this.emitter.emit("filtersChanged", this.spec);
   }
 
   setFilterGain(idx: number, gain: number): void {
@@ -150,6 +168,7 @@ export class WEQ8Runtime {
         filter.gain.value = gain;
       }
     }
+    this.emitter.emit("filtersChanged", this.spec);
   }
 
   getFrequencyResponse(

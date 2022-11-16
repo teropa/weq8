@@ -239,50 +239,31 @@ export class EQUIFilterRowElement extends LitElement {
       this.index,
       !this.runtime.spec[this.index].bypass
     );
-    this.dispatchEvent(
-      new CustomEvent("change", { bubbles: true, composed: true })
-    );
   }
 
   private setFilterType(type: FilterType | "noop") {
     if (!this.runtime || this.index === undefined) return;
-
     this.runtime.setFilterType(this.index, type);
-    this.dispatchEvent(
-      new CustomEvent("change", { bubbles: true, composed: true })
-    );
   }
 
   private setFilterFrequency(frequency: number) {
     if (!this.runtime || this.index === undefined) return;
-
     if (!isNaN(frequency)) {
       this.runtime.setFilterFrequency(this.index, frequency);
-      this.dispatchEvent(
-        new CustomEvent("change", { bubbles: true, composed: true })
-      );
     }
   }
 
   private setFilterGain(gain: number) {
     if (!this.runtime || this.index === undefined) return;
-
     if (!isNaN(gain)) {
       this.runtime.setFilterGain(this.index, gain);
-      this.dispatchEvent(
-        new CustomEvent("change", { bubbles: true, composed: true })
-      );
     }
   }
 
   private setFilterQ(Q: number) {
     if (!this.runtime || this.index === undefined) return;
-
     if (!isNaN(Q)) {
       this.runtime.setFilterQ(this.index, Q);
-      this.dispatchEvent(
-        new CustomEvent("change", { bubbles: true, composed: true })
-      );
     }
   }
 
@@ -349,10 +330,6 @@ export class EQUIFilterRowElement extends LitElement {
         let newQ = toLin(startQLog + relYDelta, minQ, maxQ);
         this.runtime.setFilterQ(this.index, newQ);
       }
-
-      this.dispatchEvent(
-        new CustomEvent("change", { bubbles: true, composed: true })
-      );
     }
   }
 }

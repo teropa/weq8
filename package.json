@@ -25,7 +25,8 @@
     "build:watch": "tsc && vite build --watch"
   },
   "dependencies": {
-    "lit": "^2.4.0"
+    "lit": "^2.4.0",
+    "nanoevents": "^7.0.1"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^9.0.2",
