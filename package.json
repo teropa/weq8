@@ -3,6 +3,13 @@
   "version": "0.1.5",
   "type": "module",
   "license": "ISC",
+  "homepage": "https://github.com/teropa/weq8",
+  "repository": "teropa/weq8",
+  "author": {
+    "name": "Tero Parviainen",
+    "email": "tero@teropa.info",
+    "url": "https://teropa.info/"
+  },
   "exports": {
     ".": {
       "import": "./dist/runtime.js",
