@@ -272,7 +272,7 @@ export class WEQ8UIElement extends LitElement {
   private specUpdate() {
     this.requestUpdate();
     for (let row of Array.from(
-      this.shadowRoot?.querySelectorAll("eq-ui-filter-row") ?? []
+      this.shadowRoot?.querySelectorAll("weq8-ui-filter-row") ?? []
     )) {
       (row as ReactiveElement).requestUpdate();
     }
