@@ -4,6 +4,8 @@ A parametric equaliser for Web Audio.
 
 ![weq8 screenshot](screenshot.png?raw=true)
 
+Try the [live demo](https://teropa.github.io/weq8/).
+
 Sculpt the spectrum of your Web Audio graph using a filter bank of up to eight filters, with an intuitive UI inspired by Ableton Live's [EQ Eight](https://www.ableton.com/en/manual/live-audio-effect-reference/#24-15-eq-eight).
 
 - Built on top of standard [BiquadFilterNode](https://developer.mozilla.org/en-US/docs/Web/API/BiquadFilterNode)s.
