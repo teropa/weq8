@@ -276,5 +276,8 @@ export class WEQ8UIElement extends LitElement {
     )) {
       (row as ReactiveElement).requestUpdate();
     }
+    this.dispatchEvent(
+      new CustomEvent("filterschanged", { bubbles: true, composed: true })
+    );
   }
 }
