@@ -2,7 +2,7 @@
 
 A parametric equaliser for Web Audio.
 
-![weq8 screenshot](screenshot.png?raw=true)
+![weq8 screenshot](https://raw.githubusercontent.com/teropa/weq8/master/screenshot.png)
 
 Try the [live demo](https://teropa.github.io/weq8/).
 
