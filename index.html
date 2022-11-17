@@ -2,15 +2,56 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Lit + TS</title>
-    <link rel="stylesheet" href="./src/index.css" />
-    <script type="module" src="/src/my-element.ts"></script>
+    <title>weq8</title>
+    <script type="module" src="/src/ui/index.ts"></script>
+    <style type="text/css">
+      body {
+        background-color: #555;
+      }
+      button {
+        display: block;
+        margin: 50px auto;
+      }
+      weq8-ui {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+    </style>
   </head>
   <body>
-    <my-element>
-      <h1>Vite + Lit</h1>
-    </my-element>
+    <button id="startstop">Start</button>
+    <weq8-ui />
+    <script type="module">
+      import { WEQ8Runtime } from "/src/main.ts";
+
+      let audioctx = new AudioContext();
+      let runtime = new WEQ8Runtime(audioctx);
+      runtime.connect(audioctx.destination);
+
+      fetch("/testloop.m4a")
+        .then((res) => res.arrayBuffer())
+        .then((buf) => audioctx.decodeAudioData(buf))
+        .then((buf) => {
+          let btn = document.getElementById("startstop");
+          let src;
+          btn.addEventListener("click", () => {
+            if (btn.textContent == "Start") {
+              src = audioctx.createBufferSource();
+              src.buffer = buf;
+              src.loop = true;
+              src.connect(runtime.input);
+              src.start();
+              btn.textContent = "Stop";
+            } else {
+              src.stop();
+              src.disconnect();
+              src = null;
+              btn.textContent = "Start";
+            }
+          });
+        });
+      document.querySelector("weq8-ui").runtime = runtime;
+    </script>
   </body>
 </html>

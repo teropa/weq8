@@ -93,3 +93,7 @@ When initialising the runtime on a subsequent load, you may provide a previous s
 ```ts
 let weq8 = new WEQ8Runtime(yourAudioCtx, state);
 ```
+
+## Development
+
+Run `yarn dev` and open your browser in [http://localhost:3000](http://localhost:3000) to get a development page with live reloading.
