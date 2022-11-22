@@ -30,6 +30,13 @@ const TYPE_OPTIONS: [FilterType | "noop", string][] = [
   ["notch12", "NT12"],
   ["notch24", "NT24"],
 ];
+
+type DragState = {
+  pointer: number;
+  startY: number;
+  startValue: number;
+};
+
 @customElement("weq8-ui-filter-row")
 export class EQUIFilterRowElement extends LitElement {
   static styles = [
@@ -139,9 +146,9 @@ export class EQUIFilterRowElement extends LitElement {
 
   @state()
   private dragStates: {
-    frequency: { pointer: number; startY: number; startValue: number } | null;
-    gain: { pointer: number; startY: number; startValue: number } | null;
-    Q: { pointer: number; startY: number; startValue: number } | null;
+    frequency: DragState | null;
+    gain: DragState | null;
+    Q: DragState | null;
   } = { frequency: null, gain: null, Q: null };
 
   render() {
@@ -318,7 +325,6 @@ export class EQUIFilterRowElement extends LitElement {
     if (!this.runtime || this.index === undefined) return;
 
     (evt.target as Element).setPointerCapture(evt.pointerId);
-    evt.preventDefault();
     this.dragStates = {
       ...this.dragStates,
       [property]: {
@@ -337,12 +343,6 @@ export class EQUIFilterRowElement extends LitElement {
 
     if (this.dragStates[property]?.pointer === evt.pointerId) {
       (evt.target as Element).releasePointerCapture(evt.pointerId);
-      if (
-        this.dragStates[property]!.startValue !==
-        this.runtime.spec[this.index][property]
-      ) {
-        (evt.target as HTMLInputElement).blur();
-      }
       this.dragStates = { ...this.dragStates, [property]: null };
     }
   }
@@ -374,6 +374,7 @@ export class EQUIFilterRowElement extends LitElement {
         let newQ = toLin(startQLog + relYDelta, minQ, maxQ);
         this.runtime.setFilterQ(this.index, newQ);
       }
+      (evt.target as HTMLInputElement).blur();
     }
   }
 }
