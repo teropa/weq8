@@ -16,7 +16,7 @@ import {
 import { sharedStyles } from "./styles";
 
 const TYPE_OPTIONS: [FilterType | "noop", string][] = [
-  ["noop", "-"],
+  ["noop", "Add +"],
   ["lowpass12", "LP12"],
   ["lowpass24", "LP24"],
   ["highpass12", "HP12"],
@@ -37,19 +37,44 @@ export class EQUIFilterRowElement extends LitElement {
     css`
       :host {
         display: table-row;
+        background: transparent;
       }
       input,
       select {
         padding: 0;
         border: 0;
       }
+      .chip {
+        display: grid;
+        grid-auto-flow: column;
+        gap: 3px;
+        height: 20px;
+        border-radius: 10px;
+        background: #373737;
+        padding-right: 7px;
+        margin-right: 3px;
+      }
       .filterNumber {
-        width: 10px;
         cursor: pointer;
+        width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        display: grid;
+        place-content: center;
+        background: white;
+        font-weight: var(--font-weight);
+        color: black;
+      }
+      .chip.disabled .filterNumber {
+        background: transparent;
+        color: white;
+      }
+      .chip.bypassed .filterNumber {
+        background: #7d7d7d;
+        color: black;
       }
       .filterTypeSelect {
         width: 30px;
-
         appearance: none;
         outline: none;
         background-color: transparent;
@@ -58,12 +83,19 @@ export class EQUIFilterRowElement extends LitElement {
         text-align: center;
         font-family: var(--font-stack);
         font-size: var(--font-size);
+        font-weight: var(--font-weight);
+      }
+      .filterTypeSelect.bypassed {
+        color: #7d7d7d;
+      }
+      .chip.disabled .filterTypeSelect {
+        pointer-events: all;
       }
       .frequencyInput {
-        width: 20px;
+        width: 28px;
       }
       .gainInput {
-        width: 23px;
+        width: 26px;
       }
       .qInput {
         width: 30px;
@@ -77,15 +109,16 @@ export class EQUIFilterRowElement extends LitElement {
         -moz-appearance: textfield;
         font-family: var(--font-stack);
         font-size: var(--font-size);
+        font-weight: var(--font-weight);
         touch-action: none;
       }
       .numberInput:disabled,
       .disabled {
-        color: #555;
+        color: #7d7d7d;
         pointer-events: none;
       }
       .bypassed {
-        color: #555;
+        color: #7d7d7d;
       }
       .numberInput::-webkit-inner-spin-button,
       .numberInput::-webkit-outer-spin-button {
@@ -116,26 +149,37 @@ export class EQUIFilterRowElement extends LitElement {
 
     let spec = this.runtime.spec[this.index];
     return html`
-      <th
-        class=${classMap({ filterNumber: true, bypassed: spec.bypass })}
-        @click=${() => this.toggleBypass()}
-      >
-        ${this.index + 1}
-      </th>
-      <td>
-        <select
-          class=${classMap({ filterTypeSelect: true, bypassed: spec.bypass })}
-          @change=${(evt: { target: HTMLSelectElement }) =>
-            this.setFilterType(evt.target.value as FilterType | "noop")}
+      <th>
+        <div
+          class=${classMap({
+            chip: true,
+            disabled: !filterHasFrequency(spec.type),
+            bypassed: spec.bypass,
+          })}
         >
-          ${TYPE_OPTIONS.map(
-            ([type, label]) =>
-              html`<option value=${type} ?selected=${spec.type === type}>
-                ${label}
-              </option>`
-          )}
-        </select>
-      </td>
+          <div
+            class=${classMap({
+              filterNumber: true,
+              bypassed: spec.bypass,
+            })}
+            @click=${() => this.toggleBypass()}
+          >
+            ${this.index + 1}
+          </div>
+          <select
+            class=${classMap({ filterTypeSelect: true, bypassed: spec.bypass })}
+            @change=${(evt: { target: HTMLSelectElement }) =>
+              this.setFilterType(evt.target.value as FilterType | "noop")}
+          >
+            ${TYPE_OPTIONS.map(
+              ([type, label]) =>
+                html`<option value=${type} ?selected=${spec.type === type}>
+                  ${label}
+                </option>`
+            )}
+          </select>
+        </div>
+      </th>
       <td>
         <input
           class=${classMap({

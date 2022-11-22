@@ -18,24 +18,34 @@ export class WEQ8UIElement extends LitElement {
         display: flex;
         flex-direction: row;
         align-items: stretch;
+        gap: 20px;
         min-width: 600px;
         min-height: 200px;
-        padding: 5px;
+        padding: 20px;
+        border-radius: 8px;
         overflow: hidden;
+        background: #202020;
+        border: 1px solid #373737;
       }
-
       .filters {
-        width: 170px;
-        border-spacing: 0;
-        margin-right: 5px;
+        width: 220px;
+        border-spacing: 5px;
       }
       .filters thead th {
-        padding-bottom: 10px;
+        height: 20px;
+        border-radius: 10px;
+        font-weight: var(--font-weight);
+        border: 1px solid #373737;
       }
-
+      .filters thead th.headerFilter {
+        text-align: left;
+        padding-left: 26px;
+        border: none;
+      }
       .visualisation {
         flex: 1;
         position: relative;
+        border: 1px solid #373737;
       }
       canvas,
       svg {
@@ -66,8 +76,8 @@ export class WEQ8UIElement extends LitElement {
         position: absolute;
         top: 0;
         left: 0;
-        width: 15px;
-        height: 15px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background-color: #fff;
         color: black;
@@ -148,8 +158,7 @@ export class WEQ8UIElement extends LitElement {
       <table class="filters">
         <thead>
           <tr>
-            <th></th>
-            <th>Filter</th>
+            <th class="headerFilter">Filter</th>
             <th>Freq</th>
             <th>Gain</th>
             <th>Q</th>
