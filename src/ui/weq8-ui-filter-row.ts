@@ -46,6 +46,9 @@ export class EQUIFilterRowElement extends LitElement {
         display: table-row;
         background: transparent;
       }
+      :host(.selected) {
+        background: #373737;
+      }
       input,
       select {
         padding: 0;
@@ -134,6 +137,15 @@ export class EQUIFilterRowElement extends LitElement {
       }
     `,
   ];
+
+  constructor() {
+    super();
+    this.addEventListener("click", () =>
+      this.dispatchEvent(
+        new CustomEvent("select", { composed: true, bubbles: true })
+      )
+    );
+  }
 
   @property({ attribute: false })
   runtime?: WEQ8Runtime;

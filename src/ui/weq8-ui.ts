@@ -95,6 +95,13 @@ export class WEQ8UIElement extends LitElement {
     `,
   ];
 
+  constructor() {
+    super();
+    this.addEventListener("click", (evt) => {
+      if (evt.composedPath()[0] === this) this.selectedFilterIdx = -1;
+    });
+  }
+
   @property({ attribute: false })
   runtime?: WEQ8Runtime;
 
@@ -109,6 +116,9 @@ export class WEQ8UIElement extends LitElement {
 
   @state()
   private dragStates: { [filterIdx: number]: number | null } = {};
+
+  @state()
+  private selectedFilterIdx = -1;
 
   @query(".analyser")
   private analyserCanvas?: HTMLCanvasElement;
@@ -171,7 +181,15 @@ export class WEQ8UIElement extends LitElement {
         <tbody>
           ${Array.from({ length: 8 }).map(
             (_, i) =>
-              html`<weq8-ui-filter-row .runtime=${this.runtime} .index=${i} />`
+              html`<weq8-ui-filter-row
+                class="${classMap({ selected: this.selectedFilterIdx === i })}"
+                .runtime=${this.runtime}
+                .index=${i}
+                @select=${(evt: CustomEvent) => {
+                  this.selectedFilterIdx = i;
+                  evt.stopPropagation();
+                }}
+              />`
           )}
         </tbody>
       </table>
@@ -185,7 +203,10 @@ export class WEQ8UIElement extends LitElement {
           ${[12, 6, 0, -6, -12].map(this.renderGridY)}
         </svg>
         <canvas class="analyser"></canvas>
-        <canvas class="frequencyResponse"></canvas>
+        <canvas
+          class="frequencyResponse"
+          @click=${() => (this.selectedFilterIdx = -1)}
+        ></canvas>
         ${this.runtime?.spec
           .filter((s) => s.type !== "noop")
           .map((s, i) => this.renderFilterHandle(s, i))}
@@ -236,7 +257,11 @@ export class WEQ8UIElement extends LitElement {
       @pointermove=${(evt: PointerEvent) => this.dragFilterHandle(evt, idx)}
     >
       <div
-        class="${classMap({ "filter-handle": true, bypassed: spec.bypass })}"
+        class="${classMap({
+          "filter-handle": true,
+          bypassed: spec.bypass,
+          selected: idx === this.selectedFilterIdx,
+        })}"
       >
         ${idx + 1}
       </div>
@@ -246,6 +271,7 @@ export class WEQ8UIElement extends LitElement {
   private startDraggingFilterHandle(evt: PointerEvent, idx: number) {
     (evt.target as Element).setPointerCapture(evt.pointerId);
     this.dragStates = { ...this.dragStates, [idx]: evt.pointerId };
+    this.selectedFilterIdx = idx;
     evt.preventDefault();
   }
 
