@@ -1,5 +1,6 @@
 import { LitElement, html, css, svg, ReactiveElement } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import { WEQ8Runtime } from "../runtime";
 import { WEQ8Filter } from "../spec";
 import { WEQ8Analyser } from "./WEQ8Analyser";
@@ -87,6 +88,9 @@ export class WEQ8UIElement extends LitElement {
         align-items: center;
         user-select: none;
         cursor: grab;
+      }
+      .filter-handle.bypassed {
+        background: #7d7d7d;
       }
     `,
   ];
@@ -231,7 +235,11 @@ export class WEQ8UIElement extends LitElement {
         this.stopDraggingFilterHandle(evt, idx)}
       @pointermove=${(evt: PointerEvent) => this.dragFilterHandle(evt, idx)}
     >
-      <div class="filter-handle">${idx + 1}</div>
+      <div
+        class="${classMap({ "filter-handle": true, bypassed: spec.bypass })}"
+      >
+        ${idx + 1}
+      </div>
     </div>`;
   }
 
