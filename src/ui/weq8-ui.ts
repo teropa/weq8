@@ -19,7 +19,7 @@ export class WEQ8UIElement extends LitElement {
         display: flex;
         flex-direction: row;
         align-items: stretch;
-        gap: 20px;
+        gap: 10px;
         min-width: 600px;
         min-height: 200px;
         padding: 20px;
@@ -29,10 +29,24 @@ export class WEQ8UIElement extends LitElement {
         border: 1px solid #373737;
       }
       .filters {
-        width: 220px;
-        border-spacing: 5px;
+        display: inline-grid;
+        grid-auto-flow: row;
+        gap: 4px;
+      }
+      .filters tbody,
+      .filters tr {
+        display: contents;
+      }
+      .filters thead {
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: 60px 60px 50px 40px;
+        align-items: center;
+        gap: 4px;
       }
       .filters thead th {
+        display: grid;
+        place-content: center;
         height: 20px;
         border-radius: 10px;
         font-weight: var(--font-weight);
@@ -40,7 +54,7 @@ export class WEQ8UIElement extends LitElement {
       }
       .filters thead th.headerFilter {
         text-align: left;
-        padding-left: 26px;
+        padding-left: 18px;
         border: none;
       }
       .visualisation {
@@ -88,6 +102,10 @@ export class WEQ8UIElement extends LitElement {
         align-items: center;
         user-select: none;
         cursor: grab;
+        transition: background-color 0.15s ease;
+      }
+      .filter-handle.selected {
+        background: #ffcc00;
       }
       .filter-handle.bypassed {
         background: #7d7d7d;

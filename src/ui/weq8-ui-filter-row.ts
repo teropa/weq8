@@ -43,26 +43,46 @@ export class EQUIFilterRowElement extends LitElement {
     sharedStyles,
     css`
       :host {
-        display: table-row;
-        background: transparent;
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: 60px 60px 50px 40px;
+        align-items: center;
+        gap: 4px;
+        background-color: transparent;
+        border-radius: 22px;
+        transition: background-color 0.15s ease;
       }
       :host(.selected) {
-        background: #373737;
+        background-color: #373737;
       }
       input,
       select {
         padding: 0;
         border: 0;
       }
+      input {
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.15s ease;
+      }
+      input:focus,
+      input:active {
+        border-color: white;
+      }
       .chip {
-        display: grid;
+        display: inline-grid;
         grid-auto-flow: column;
         gap: 3px;
         height: 20px;
+        padding-right: 6px;
         border-radius: 10px;
         background: #373737;
-        padding-right: 7px;
-        margin-right: 3px;
+        transition: background-color 0.15s ease;
+      }
+      :host(.selected) .chip .filterNumber {
+        background: #ffcc00;
+      }
+      .chip.disabled:hover {
+        background: #444444;
       }
       .filterNumber {
         cursor: pointer;
@@ -74,6 +94,7 @@ export class EQUIFilterRowElement extends LitElement {
         background: white;
         font-weight: var(--font-weight);
         color: black;
+        transition: background-color 0.15s ease;
       }
       .chip.disabled .filterNumber {
         background: transparent;
