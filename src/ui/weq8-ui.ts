@@ -204,7 +204,8 @@ export class WEQ8UIElement extends LitElement {
                 .runtime=${this.runtime}
                 .index=${i}
                 @select=${(evt: CustomEvent) => {
-                  this.selectedFilterIdx = i;
+                  this.selectedFilterIdx =
+                    this.runtime?.spec[i].type === "noop" ? -1 : i;
                   evt.stopPropagation();
                 }}
               />`
