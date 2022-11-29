@@ -226,9 +226,9 @@ export class WEQ8UIElement extends LitElement {
           class="frequencyResponse"
           @click=${() => (this.selectedFilterIdx = -1)}
         ></canvas>
-        ${this.runtime?.spec
-          .filter((s) => s.type !== "noop")
-          .map((s, i) => this.renderFilterHandle(s, i))}
+        ${this.runtime?.spec.map((s, i) =>
+          s.type === "noop" ? undefined : this.renderFilterHandle(s, i)
+        )}
       </div>
     `;
   }
