@@ -187,6 +187,10 @@ export class EQUIFilterRowElement extends LitElement {
   render() {
     if (!this.runtime || this.index === undefined) return;
 
+    let typeOptions = TYPE_OPTIONS.filter((o) =>
+      this.runtime!.supportedFilterTypes.includes(o[0] as FilterType)
+    );
+
     let spec = this.runtime.spec[this.index];
     return html`
       <th>
@@ -211,7 +215,7 @@ export class EQUIFilterRowElement extends LitElement {
             @change=${(evt: { target: HTMLSelectElement }) =>
               this.setFilterType(evt.target.value as FilterType | "noop")}
           >
-            ${TYPE_OPTIONS.map(
+            ${typeOptions.map(
               ([type, label]) =>
                 html`<option value=${type} ?selected=${spec.type === type}>
                   ${label}

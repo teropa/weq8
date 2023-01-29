@@ -24,6 +24,22 @@ export type FilterType =
   | "peaking24"
   | "notch12"
   | "notch24";
+export const FILTER_TYPES: FilterType[] = [
+  "lowpass12",
+  "lowpass24",
+  "highpass12",
+  "highpass24",
+  "bandpass12",
+  "bandpass24",
+  "lowshelf12",
+  "lowshelf24",
+  "highshelf12",
+  "highshelf24",
+  "peaking12",
+  "peaking24",
+  "notch12",
+  "notch24",
+];
 
 export type WEQ8Filter = {
   type: FilterType | "noop";

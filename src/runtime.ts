@@ -1,5 +1,5 @@
 import { createNanoEvents, Emitter, Unsubscribe } from "nanoevents";
-import { WEQ8Spec, FilterType, DEFAULT_SPEC } from "./spec";
+import { WEQ8Spec, FilterType, DEFAULT_SPEC, FILTER_TYPES } from "./spec";
 import { getBiquadFilterOrder, getBiquadFilterType } from "./functions";
 
 interface WEQ8Events {
@@ -15,7 +15,8 @@ export class WEQ8Runtime {
 
   constructor(
     public readonly audioCtx: BaseAudioContext,
-    public readonly spec: WEQ8Spec = DEFAULT_SPEC
+    public readonly spec: WEQ8Spec = DEFAULT_SPEC,
+    public readonly supportedFilterTypes: FilterType[] = FILTER_TYPES
   ) {
     this.input = audioCtx.createGain();
     this.output = audioCtx.createGain();
