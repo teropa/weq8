@@ -9,6 +9,7 @@ import { sharedStyles } from "./styles";
 import { clamp, filterHasGain, toLin, toLog10 } from "../functions";
 
 import "./weq8-ui-filter-row";
+import "./weq8-ui-filter-hud";
 
 @customElement("weq8-ui")
 export class WEQ8UIElement extends LitElement {
@@ -24,7 +25,7 @@ export class WEQ8UIElement extends LitElement {
         min-height: 200px;
         padding: 20px;
         border-radius: 8px;
-        overflow: hidden;
+        overflow: visible;
         background: #202020;
         border: 1px solid #373737;
       }
@@ -123,6 +124,9 @@ export class WEQ8UIElement extends LitElement {
   @property({ attribute: false })
   runtime?: WEQ8Runtime;
 
+  @property()
+  view: "hud" | "allBands" = "allBands";
+
   @state()
   private analyser?: WEQ8Analyser;
 
@@ -183,35 +187,14 @@ export class WEQ8UIElement extends LitElement {
         });
       }
     }
+    if (changedProperties.has("view")) {
+      this.requestUpdate(); // Request another update to set handle positions in new view flow
+    }
   }
 
   render() {
     return html`
-      <table class="filters">
-        <thead>
-          <tr>
-            <th class="headerFilter">Filter</th>
-            <th>Freq</th>
-            <th>Gain</th>
-            <th>Q</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${Array.from({ length: 8 }).map(
-            (_, i) =>
-              html`<weq8-ui-filter-row
-                class="${classMap({ selected: this.selectedFilterIdx === i })}"
-                .runtime=${this.runtime}
-                .index=${i}
-                @select=${(evt: CustomEvent) => {
-                  this.selectedFilterIdx =
-                    this.runtime?.spec[i].type === "noop" ? -1 : i;
-                  evt.stopPropagation();
-                }}
-              />`
-          )}
-        </tbody>
-      </table>
+      ${this.view === "allBands" ? this.renderTable() : null}
       <div class="visualisation">
         <svg
           viewBox="0 0 100 10"
@@ -229,8 +212,51 @@ export class WEQ8UIElement extends LitElement {
         ${this.runtime?.spec.map((s, i) =>
           s.type === "noop" ? undefined : this.renderFilterHandle(s, i)
         )}
+        ${this.view === "hud" && this.selectedFilterIdx !== -1
+          ? this.renderFilterHUD()
+          : null}
       </div>
     `;
+  }
+
+  private renderTable() {
+    return html` <table class="filters">
+      <thead>
+        <tr>
+          <th class="headerFilter">Filter</th>
+          <th>Freq</th>
+          <th>Gain</th>
+          <th>Q</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${Array.from({ length: 8 }).map(
+          (_, i) =>
+            html`<weq8-ui-filter-row
+              class="${classMap({ selected: this.selectedFilterIdx === i })}"
+              .runtime=${this.runtime}
+              .index=${i}
+              @select=${(evt: CustomEvent) => {
+                this.selectedFilterIdx =
+                  this.runtime?.spec[i].type === "noop" ? -1 : i;
+                evt.stopPropagation();
+              }}
+            />`
+        )}
+      </tbody>
+    </table>`;
+  }
+
+  private renderFilterHUD() {
+    if (!this.runtime) return html``;
+    let spec = this.runtime?.spec[this.selectedFilterIdx];
+    let [x, y] = this.getFilterPositionInVisualisation(spec);
+    return html`<weq8-ui-filter-hud
+      .runtime=${this.runtime}
+      .index=${this.selectedFilterIdx}
+      .x=${x}
+      .y=${y}
+    />`;
   }
 
   private renderGridX(x: number) {
@@ -257,15 +283,7 @@ export class WEQ8UIElement extends LitElement {
 
   private renderFilterHandle(spec: WEQ8Filter, idx: number) {
     if (!this.runtime) return;
-    let filterType = this.runtime.spec[idx].type;
-    let width = this.analyserCanvas?.offsetWidth ?? 0;
-    let height = this.analyserCanvas?.offsetHeight ?? 0;
-    let x =
-      toLog10(spec.frequency, 10, this.runtime.audioCtx.sampleRate / 2) * width;
-    let y = height - ((spec.gain + 15) / 30) * height;
-    if (!filterHasGain(filterType)) {
-      y = height - toLog10(spec.Q, 0.1, 18) * height;
-    }
+    let [x, y] = this.getFilterPositionInVisualisation(spec);
     return html`<div
       class="filter-handle-positioner"
       style="transform: translate(${x}px,${y}px)"
@@ -285,6 +303,19 @@ export class WEQ8UIElement extends LitElement {
         ${idx + 1}
       </div>
     </div>`;
+  }
+
+  private getFilterPositionInVisualisation(spec: WEQ8Filter): [number, number] {
+    if (!this.runtime) return [0, 0];
+    let width = this.analyserCanvas?.offsetWidth ?? 0;
+    let height = this.analyserCanvas?.offsetHeight ?? 0;
+    let x =
+      toLog10(spec.frequency, 10, this.runtime.audioCtx.sampleRate / 2) * width;
+    let y = height - ((spec.gain + 15) / 30) * height;
+    if (!filterHasGain(spec.type)) {
+      y = height - toLog10(spec.Q, 0.1, 18) * height;
+    }
+    return [x, y];
   }
 
   private startDraggingFilterHandle(evt: PointerEvent, idx: number) {

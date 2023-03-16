@@ -1,5 +1,5 @@
 import { LitElement, html, css } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, state, query } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import { WEQ8Runtime } from "../runtime";
 import { FilterType } from "../spec";
@@ -22,23 +22,21 @@ type DragState = {
   startValue: number;
 };
 
-@customElement("weq8-ui-filter-row")
-export class EQUIFilterRowElement extends LitElement {
+@customElement("weq8-ui-filter-hud")
+export class EQUIFilterHUDElement extends LitElement {
   static styles = [
     sharedStyles,
     css`
-      :host {
+      .root {
+        position: absolute;
         display: grid;
         grid-auto-flow: column;
+        width: 210px;
         grid-template-columns: 60px 60px 50px 40px;
         align-items: center;
         gap: 4px;
-        background-color: transparent;
+        background-color: black;
         border-radius: 22px;
-        transition: background-color 0.15s ease;
-      }
-      :host(.selected) {
-        background-color: #373737;
       }
       input,
       select {
@@ -63,31 +61,8 @@ export class EQUIFilterRowElement extends LitElement {
         background: #373737;
         transition: background-color 0.15s ease;
       }
-      :host(.selected) .chip .filterNumber {
-        background: #ffcc00;
-      }
       .chip.disabled:hover {
         background: #444444;
-      }
-      .filterNumber {
-        cursor: pointer;
-        width: 20px;
-        height: 20px;
-        border-radius: 10px;
-        display: grid;
-        place-content: center;
-        background: white;
-        font-weight: var(--font-weight);
-        color: black;
-        transition: background-color 0.15s ease;
-      }
-      .chip.disabled .filterNumber {
-        background: transparent;
-        color: white;
-      }
-      .chip.bypassed .filterNumber {
-        background: #7d7d7d;
-        color: black;
       }
       .filterTypeSelect {
         width: 30px;
@@ -144,20 +119,17 @@ export class EQUIFilterRowElement extends LitElement {
     `,
   ];
 
-  constructor() {
-    super();
-    this.addEventListener("click", () =>
-      this.dispatchEvent(
-        new CustomEvent("select", { composed: true, bubbles: true })
-      )
-    );
-  }
-
   @property({ attribute: false })
   runtime?: WEQ8Runtime;
 
   @property()
   index?: number;
+
+  @property()
+  x?: number = 0;
+
+  @property()
+  y?: number = 0;
 
   @state()
   private frequencyInputFocused = false;
@@ -169,6 +141,9 @@ export class EQUIFilterRowElement extends LitElement {
     Q: DragState | null;
   } = { frequency: null, gain: null, Q: null };
 
+  @state()
+  private posOnDragStart: { x: number; y: number } | null = null;
+
   render() {
     if (!this.runtime || this.index === undefined) return;
 
@@ -177,141 +152,138 @@ export class EQUIFilterRowElement extends LitElement {
     );
 
     let spec = this.runtime.spec[this.index];
+
+    let x = (this.posOnDragStart?.x ?? this.x!) - 100;
+    let y = (this.posOnDragStart?.y ?? this.y!) + 20;
+
+    console.log("hi", x, y);
     return html`
-      <th>
-        <div
-          class=${classMap({
-            chip: true,
-            disabled: !filterHasFrequency(spec.type),
-            bypassed: spec.bypass,
-          })}
-        >
+      <div class="root" style="transform: translate(${x}px, ${y}px);">
+        <div>
           <div
             class=${classMap({
-              filterNumber: true,
+              chip: true,
+              disabled: !filterHasFrequency(spec.type),
               bypassed: spec.bypass,
             })}
-            @click=${() => this.toggleBypass()}
           >
-            ${this.index + 1}
+            <select
+              class=${classMap({
+                filterTypeSelect: true,
+                bypassed: spec.bypass,
+              })}
+              @change=${(evt: { target: HTMLSelectElement }) =>
+                this.setFilterType(evt.target.value as FilterType | "noop")}
+            >
+              ${typeOptions.map(
+                ([type, label]) =>
+                  html`<option value=${type} ?selected=${spec.type === type}>
+                    ${label}
+                  </option>`
+              )}
+            </select>
           </div>
-          <select
-            class=${classMap({ filterTypeSelect: true, bypassed: spec.bypass })}
-            @change=${(evt: { target: HTMLSelectElement }) =>
-              this.setFilterType(evt.target.value as FilterType | "noop")}
-          >
-            ${typeOptions.map(
-              ([type, label]) =>
-                html`<option value=${type} ?selected=${spec.type === type}>
-                  ${label}
-                </option>`
-            )}
-          </select>
         </div>
-      </th>
-      <td>
-        <input
-          class=${classMap({
-            frequencyInput: true,
-            numberInput: true,
-            bypassed: spec.bypass,
-          })}
-          type="number"
-          step="0.1"
-          lang="en_EN"
-          .value=${formatFrequency(spec.frequency, this.frequencyInputFocused)}
-          ?disabled=${!filterHasFrequency(spec.type)}
-          @focus=${() => (this.frequencyInputFocused = true)}
-          @blur=${() => {
-            this.frequencyInputFocused = false;
-            this.setFilterFrequency(clamp(spec.frequency, 10, this.nyquist));
-          }}
-          @input=${(evt: { target: HTMLInputElement }) =>
-            this.setFilterFrequency(evt.target.valueAsNumber)}
-          @pointerdown=${(evt: PointerEvent) =>
-            this.startDraggingValue(evt, "frequency")}
-          @pointerup=${(evt: PointerEvent) =>
-            this.stopDraggingValue(evt, "frequency")}
-          @pointermove=${(evt: PointerEvent) =>
-            this.dragValue(evt, "frequency")}
-        />
-        <span
-          class=${classMap({
-            frequencyUnit: true,
-            disabled: !filterHasFrequency(spec.type),
-            bypassed: spec.bypass,
-          })}
-          >${formatFrequencyUnit(
-            spec.frequency,
-            this.frequencyInputFocused
-          )}</span
-        >
-      </td>
-      <td>
-        <input
-          class=${classMap({
-            gainInput: true,
-            numberInput: true,
-            bypassed: spec.bypass,
-          })}
-          type="number"
-          min="-15"
-          max="15"
-          step="0.1"
-          lang="en_EN"
-          .value=${spec.gain.toFixed(1)}
-          ?disabled=${!filterHasGain(spec.type)}
-          @input=${(evt: { target: HTMLInputElement }) =>
-            this.setFilterGain(evt.target.valueAsNumber)}
-          @pointerdown=${(evt: PointerEvent) =>
-            this.startDraggingValue(evt, "gain")}
-          @pointerup=${(evt: PointerEvent) =>
-            this.stopDraggingValue(evt, "gain")}
-          @pointermove=${(evt: PointerEvent) => this.dragValue(evt, "gain")}
-        />
-        <span
-          class=${classMap({
-            gainUnit: true,
-            disabled: !filterHasGain(spec.type),
-            bypassed: spec.bypass,
-          })}
-          >dB</span
-        >
-      </td>
-      <td>
-        <input
-          class=${classMap({
-            qInput: true,
-            numberInput: true,
-            bypassed: spec.bypass,
-          })}
-          type="number"
-          min="0.1"
-          max="18"
-          step="0.1"
-          .value=${spec.Q.toFixed(2)}
-          ?disabled=${!filterHasQ(spec.type)}
-          @input=${(evt: { target: HTMLInputElement }) =>
-            this.setFilterQ(evt.target.valueAsNumber)}
-          @pointerdown=${(evt: PointerEvent) =>
-            this.startDraggingValue(evt, "Q")}
-          @pointerup=${(evt: PointerEvent) => this.stopDraggingValue(evt, "Q")}
-          @pointermove=${(evt: PointerEvent) => this.dragValue(evt, "Q")}
-        />
-      </td>
+        <div>
+          <input
+            class=${classMap({
+              frequencyInput: true,
+              numberInput: true,
+              bypassed: spec.bypass,
+            })}
+            type="number"
+            step="0.1"
+            lang="en_EN"
+            .value=${formatFrequency(
+              spec.frequency,
+              this.frequencyInputFocused
+            )}
+            ?disabled=${!filterHasFrequency(spec.type)}
+            @focus=${() => (this.frequencyInputFocused = true)}
+            @blur=${() => {
+              this.frequencyInputFocused = false;
+              this.setFilterFrequency(clamp(spec.frequency, 10, this.nyquist));
+            }}
+            @input=${(evt: { target: HTMLInputElement }) =>
+              this.setFilterFrequency(evt.target.valueAsNumber)}
+            @pointerdown=${(evt: PointerEvent) =>
+              this.startDraggingValue(evt, "frequency")}
+            @pointerup=${(evt: PointerEvent) =>
+              this.stopDraggingValue(evt, "frequency")}
+            @pointermove=${(evt: PointerEvent) =>
+              this.dragValue(evt, "frequency")}
+          />
+          <span
+            class=${classMap({
+              frequencyUnit: true,
+              disabled: !filterHasFrequency(spec.type),
+              bypassed: spec.bypass,
+            })}
+            >${formatFrequencyUnit(
+              spec.frequency,
+              this.frequencyInputFocused
+            )}</span
+          >
+        </div>
+        <div>
+          <input
+            class=${classMap({
+              gainInput: true,
+              numberInput: true,
+              bypassed: spec.bypass,
+            })}
+            type="number"
+            min="-15"
+            max="15"
+            step="0.1"
+            lang="en_EN"
+            .value=${spec.gain.toFixed(1)}
+            ?disabled=${!filterHasGain(spec.type)}
+            @input=${(evt: { target: HTMLInputElement }) =>
+              this.setFilterGain(evt.target.valueAsNumber)}
+            @pointerdown=${(evt: PointerEvent) =>
+              this.startDraggingValue(evt, "gain")}
+            @pointerup=${(evt: PointerEvent) =>
+              this.stopDraggingValue(evt, "gain")}
+            @pointermove=${(evt: PointerEvent) => this.dragValue(evt, "gain")}
+          />
+          <span
+            class=${classMap({
+              gainUnit: true,
+              disabled: !filterHasGain(spec.type),
+              bypassed: spec.bypass,
+            })}
+            >dB</span
+          >
+        </div>
+        <div>
+          <input
+            class=${classMap({
+              qInput: true,
+              numberInput: true,
+              bypassed: spec.bypass,
+            })}
+            type="number"
+            min="0.1"
+            max="18"
+            step="0.1"
+            .value=${spec.Q.toFixed(2)}
+            ?disabled=${!filterHasQ(spec.type)}
+            @input=${(evt: { target: HTMLInputElement }) =>
+              this.setFilterQ(evt.target.valueAsNumber)}
+            @pointerdown=${(evt: PointerEvent) =>
+              this.startDraggingValue(evt, "Q")}
+            @pointerup=${(evt: PointerEvent) =>
+              this.stopDraggingValue(evt, "Q")}
+            @pointermove=${(evt: PointerEvent) => this.dragValue(evt, "Q")}
+          />
+        </div>
+      </div>
     `;
   }
 
   private get nyquist() {
     return (this.runtime?.audioCtx.sampleRate ?? 48000) / 2;
-  }
-
-  private toggleBypass() {
-    if (!this.runtime || this.index === undefined) return;
-    this.runtime.toggleBypass(
-      this.index,
-      !this.runtime.spec[this.index].bypass
-    );
   }
 
   private setFilterType(type: FilterType | "noop") {
@@ -355,6 +327,7 @@ export class EQUIFilterRowElement extends LitElement {
         startValue: this.runtime.spec[this.index][property],
       },
     };
+    this.posOnDragStart = { x: this.x!, y: this.y! };
   }
 
   private stopDraggingValue(
@@ -366,6 +339,13 @@ export class EQUIFilterRowElement extends LitElement {
     if (this.dragStates[property]?.pointer === evt.pointerId) {
       (evt.target as Element).releasePointerCapture(evt.pointerId);
       this.dragStates = { ...this.dragStates, [property]: null };
+    }
+    if (
+      this.dragStates.frequency === null &&
+      this.dragStates.gain === null &&
+      this.dragStates.Q === null
+    ) {
+      this.posOnDragStart = null;
     }
   }
 

@@ -8,6 +8,12 @@
     <style type="text/css">
       body {
         background-color: #555;
+        color: white;
+      }
+      .viewSelect {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
       }
       button {
         display: block;
@@ -21,7 +27,14 @@
   </head>
   <body>
     <button id="startstop">Start</button>
-    <weq8-ui />
+    <div class="viewSelect">
+      <label
+        ><input type="radio" name="view" value="allBands" checked /> All
+        bands</label
+      >
+      <label><input type="radio" name="view" value="hud" /> HUD</label>
+    </div>
+    <weq8-ui view="allBands" />
     <script type="module">
       import { WEQ8Runtime } from "/src/main.ts";
 
@@ -52,6 +65,12 @@
           });
         });
       document.querySelector("weq8-ui").runtime = runtime;
+
+      document.querySelectorAll("input[name=view]").forEach((el) =>
+        el.addEventListener("change", (e) => {
+          document.querySelector("weq8-ui").view = e.target.value;
+        })
+      );
     </script>
   </body>
 </html>
